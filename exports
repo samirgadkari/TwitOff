@@ -1,0 +1,17 @@
+# Exported variables for this project are in this file.
+# Just run this command to use them:
+# source exports
+
+export FLASK_APP=twitoff:APP  # The app for this project.
+                              # Allows you to do 'flask run'
+                              # or 'flask shell' without
+                              # FLASK_APP:twitoff:APP before it.
+export FLASK_ENV=development  # Any changes you do to your code
+                              # will be seen immediately by the
+                              # webserver. You don't need to
+                              # restart it.
+                              # Also provides a debugger on error.
+                              #
+                              # WARNING:
+                              # >>>     Security hole       <<<
+                              # >>> don't use in production <<<

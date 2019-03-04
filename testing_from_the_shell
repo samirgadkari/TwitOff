@@ -1,0 +1,61 @@
+pipenv install Flask
+pipenv install flask-sqlalchemy
+
+FLASK_APP=twitoff:APP flask run  # To run the flask application
+You can then go to the browser (localhost:5000) and test the result.
+
+FLASK_APP+twitoff:APP flask shell    # to enter the flask shell
+
+>>> from twitoff.models import *
+>>> u1 = User(name='austen')
+>>> t1 = Tweet(text='Lambda School Rocks!')
+>>> u1
+<User (transient 140275794194384)>
+>>> t1
+<Tweet (transient 140275794193992)>
+>>> DB.session.add(u1)
+>>> DB.session.add(t1)  # for new entities only, to add to db
+>>> DB.session.commit()
+>>> 
+
+Exit and come back into the flask shell:
+
+>>> from twitoff.models import *
+>>> User.query.all()
+[<User 1>]
+>>> User.query.all()[0].name
+'austen'
+>>> Tweet.query.all()[0].text
+'Lambda School Rocks!'
+>>>
+
+Removing earlier table, and creating another:
+
+>>> DB.drop_all()             # Remove earlier table from DB.
+>>> DB.create_all()           # Create new table with given schema.
+                              # SQLAlchemy knows how to do this based on
+                              # our models.
+>>> u1 = User(name='austen')
+>>> t1 = Tweet(text='Lambda School Rocks!')
+>>> u1.tweets
+[]
+>>> u1.tweets.append(t1)      # We have to append the tweet to the user.
+                              # There is no tweet without a user.
+>>> DB.session.add(u1)
+>>> DB.session.add(t1)
+>>> DB.session.commit()
+>>>
+
+Query user and list his tweets:
+
+# FLASK_APP=twitoff:APP flask shell
+>>> from twitoff.models import User
+>>> u1 = User.query.filter(User.name == 'austen').first()
+>>> u1
+<User austen>
+>>> u1.tweets
+[<Tweet Lambda School Rocks!>]
+>>>
+
+
+

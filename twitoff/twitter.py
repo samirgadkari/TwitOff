@@ -12,3 +12,5 @@ TWITTER = tweepy.API(TWITTER_AUTH)
 BASILICA = basilica.Connection(config('BASILICA_KEY'))
 
 # TODO write some useful functions
+def get_user(username):
+    return TWITTER.get_user(username)

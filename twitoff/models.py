@@ -25,3 +25,14 @@ class Tweet(DB.Model):
 
     def __repr__(self):
         return '<Tweet {}>'.format(self.text)
+
+# class Follower(DB.Model):
+#     """Followers of a user"""
+    # id = DB.Column(DB.Integer, primary_key=True)
+    # user_id = DB.Column(DB.BigInteger, DB.ForeignKey('user.id'), nullable=False)
+    # user = DB.relationship('User', backref=DB.backref('followers', lazy=True))
+
+    # follower_name = DB.Column(DB.String(15), nullable=False)
+
+    # def __repr__(self):
+    #     return '<Follower {}>'.format(self.follower_name)

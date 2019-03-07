@@ -1,15 +1,30 @@
 <html>
     <head>
-        <title>TwitOff</title>
+        <title>TwitOff - {{ title }}</title>
         <!-- CSS keywords, metadata goes here -->
     </head>
     <body>
         <h1>TwitOff</h1>
-        <p>Content for TwitOff will go here ...</p>
+        {% block content %}
+        <form action="/user" method="post">
+            <input type="text" name="user_name" placeholder="User to add">
+            <input type="submit" value="Add User">
+        </form>
 
-        <ul>
-            {% for user in users %}
-            <li>{{ user.id }} - {{ user.name }}</li>
-            {% endfor %}
+        <form action="/compare" method="post">
+            <select name="user1">
+                {% for user in users %}
+                <option value="{{ user.name }}">{{ user.name }}</option>
+                {% endfor %}
+            </select>
+            <select name="user2">
+                {% for user in users %}
+                <option value="{{ user.name }}">{{ user.name }}</option>
+                {% endfor %}
+            </select>
+            <input type="text" name="tweet_text" placeholder="Tweet text to predict">
+            <input type="submit" value="Compare Users">
+        </form>
+        {% endblock %}
     </body>
 </html>

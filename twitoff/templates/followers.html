@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>User: {{ title }}</h2>
+
+<p>{{ message }}</p>
+<ul>
+    {% for f in followers %}
+    <li>{{ f }}</li>
+    {% endfor %}
+</ul>
+
+{% endblock %}

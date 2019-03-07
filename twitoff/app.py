@@ -2,13 +2,13 @@
 from decouple import config
 from flask import Flask, render_template, request
 from .models import DB, User
-from .twitter import get_user
+from .predict import predict_user
+from .twitter import get_user, add_or_update_user
 
 def create_app():
     """Create and configure and instance of the Flask application."""
     app = Flask(__name__)
     app.config['SQLALCHEMY_DATABASE_URI'] = config('DATABASE_URL')
-    app.config['ENV'] = config('ENV')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     DB.init_app(app)
 
@@ -16,6 +16,35 @@ def create_app():
     def root():
         users = User.query.all()
         return render_template('base.html', title='Home', users=users)
+
+    @app.route('/user', methods=['POST'])
+    @app.route('/user/<name>', methods=['GET'])
+    def user(name=None):
+        message = ''
+        name = name or request.values['user_name']
+        try:
+            if request.method == 'POST':
+                add_or_update_user(name)
+                message = 'User {} successfully added!'.format(name)
+            tweets = User.query.filter(User.name == name).one().tweets
+        except Exception as e:
+            message = 'Error adding {}: {}'.format(name, e)
+            tweets = []
+
+        return render_template('user.html', title=name, tweets=tweets,
+                               message=message)
+
+    @app.route('/compare', methods=['POST'])
+    def compare():
+        user1, user2 = request.values['user1'], request.values['user2']
+        if user1 == user2:
+            return 'Cannot compare a user to themselves!'
+        else:
+            text = request.values['tweet_text']
+            prediction = predict_user(user1, user2, text)
+            res = ((user1 if prediction else user2) + """ is more likely
+                               to have said '{}'""").format(text)
+            return res
 
     @app.route('/reset')
     def reset():
@@ -25,13 +54,18 @@ def create_app():
 
     @app.route('/followers/<username>')
     def followers(username):
-        user = get_user(username)
+        user = User.query.filter(User.name == username).first()
+        if user == None:
+            return render_template('/error.html',
+                                   title=username,
+                                   message='User' + username +
+                                   'not in database')
 
-        res = username + "'s followers:<hr><ul>"
-        for f in user.followers():
-            res += "<li>" + f.screen_name + "</li>"
-        res += "</ul"
-
-        return res
+        followers_of_user = Follower.query.filter(Follower.user_id == user.id)
+        names = [f.follower_name for f in followers_of_user]
+        return render_template('followers.html',
+                               title=username,
+                               message='Followers for ' + username + ':',
+                               followers=names)
 
     return app

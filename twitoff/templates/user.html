@@ -8,6 +8,12 @@
     {% for tweet in tweets %}
     <li>{{ tweet.id }} - {{ tweet.text }}</li>
     {% endfor %}
+    <hr />
+    {% if followers|length > 0 %}
+      {% for name in followers %}
+      <li>{{ name }}</li>
+      {% endfor %}
+    {% endif %}
 </ul>
 
 {% endblock %}

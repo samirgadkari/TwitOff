@@ -6,6 +6,12 @@ DB = SQLAlchemy()
 class User(DB.Model):
     """Twitter users that we pull and analyze tweets for."""
     id = DB.Column(DB.BigInteger, primary_key=True)
+
+    # We need this id, but we don't know how to get the primary
+    # key (the id above). Have to do more googling to find out.
+    # Until then, create this column with the same id.
+    user_id = DB.Column(DB.BigInteger, nullable=False)
+
     name = DB.Column(DB.String(15), nullable=False)
     newest_tweet_id = DB.Column(DB.BigInteger)
 
@@ -26,13 +32,13 @@ class Tweet(DB.Model):
     def __repr__(self):
         return '<Tweet {}>'.format(self.text)
 
-# class Follower(DB.Model):
-#     """Followers of a user"""
-    # id = DB.Column(DB.Integer, primary_key=True)
-    # user_id = DB.Column(DB.BigInteger, DB.ForeignKey('user.id'), nullable=False)
-    # user = DB.relationship('User', backref=DB.backref('followers', lazy=True))
+class Follower(DB.Model):
+    """Followers of a user"""
+    id = DB.Column(DB.Integer, primary_key=True)
+    user_id = DB.Column(DB.BigInteger, DB.ForeignKey('user.id'), nullable=False)
+    user = DB.relationship('User', backref=DB.backref('followers', lazy=True))
 
-    # follower_name = DB.Column(DB.String(15), nullable=False)
+    name = DB.Column(DB.String(15), nullable=False)
 
-    # def __repr__(self):
-    #     return '<Follower {}>'.format(self.follower_name)
+    def __repr__(self):
+        return '<Follower {}>'.format(self.name)

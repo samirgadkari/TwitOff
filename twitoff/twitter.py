@@ -2,7 +2,7 @@
 import basilica
 import tweepy
 from decouple import config
-from .models import DB, Tweet, User # , Follower
+from .models import DB, Tweet, User, Follower
 
 TWITTER_AUTH = tweepy.OAuthHandler(config('TWITTER_CONSUMER_KEY'),
                                    config('TWITTER_CONSUMER_SECRET'))
@@ -11,39 +11,38 @@ TWITTER_AUTH.set_access_token(config('TWITTER_ACCESS_TOKEN'),
 TWITTER = tweepy.API(TWITTER_AUTH)
 BASILICA = basilica.Connection(config('BASILICA_KEY'))
 
-def get_user(username):
-    return TWITTER.get_user(username)
+def get_followers(username):
 
-# def get_followers(username, twitter_user):
+    try:
+        twitter_user = TWITTER.get_user(username)
+        followers = TWITTER.followers(username)
+        for f in followers:
+            print(f.screen_name)
+            db_follower = Follower(user_id=twitter_user.id,
+                                   name=f.screen_name)
+            DB.session.add(db_follower)
+    except Exception as e:
+        print('Error processing {}: {}'.format(username, e))
+        raise e
+    else: # If there is no error, do this.
+        DB.session.commit()
+    return [f.name for f in followers]
 
-#     try:
-#         followers = TWITTER.followers(username)
-#         print('looping through followers')
-#         for f in followers:
-#             print(f.screen_name)
-#             db_follower = Follower(f.id,
-#                                    user_id=twitter_user.id,
-    #                                follower_name=f.screen_name)
-    #         DB.session.add(db_follower)
-    #     print('finished looping through followers')
-    # except Exception as e:
-    #     print('Error processing {}: {}'.format(username, e))
-    #     raise e
-    # else: # If there is no error, do this.
-    #     print('commiting session')
-    #     DB.session.commit()
-    # print('Got followers')
+def get_followers_from_db(username):
+    user = User.query.filter(User.name == username)
+    followers = Follower.query.filter(Follower.user_id == user.user_id)
+    return [f.name for f in followers]
 
 def add_or_update_user(username):
     """Add or update a user and their tweets, error if no/private user."""
     try:
         twitter_user = TWITTER.get_user(username)
+        id = twitter_user.id
 
-        db_user = User.query.get(twitter_user.id)
+        db_user = User.query.get(id)
         if db_user == None:
-            db_user = User(id=twitter_user.id, name=username)
+            db_user = User(id=id, user_id=id, name=username)
             DB.session.add(db_user)
-            # get_followers(username, twitter_user)
 
         # We want as many recent non-retweet/reply statuses as we can get
         tweets = twitter_user.timeline(

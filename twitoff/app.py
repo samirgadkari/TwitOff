@@ -3,7 +3,7 @@ from decouple import config
 from flask import Flask, render_template, request
 from .models import DB, User
 from .predict import predict_user
-from .twitter import get_user, add_or_update_user
+from .twitter import get_followers, add_or_update_user, get_followers_from_db
 
 def create_app():
     """Create and configure and instance of the Flask application."""
@@ -22,17 +22,21 @@ def create_app():
     def user(name=None):
         message = ''
         name = name or request.values['user_name']
+        followers = None
         try:
             if request.method == 'POST':
                 add_or_update_user(name)
                 message = 'User {} successfully added!'.format(name)
+                followers = get_followers(name)
+            else:
+                followers = get_followers_from_db(name)
             tweets = User.query.filter(User.name == name).one().tweets
         except Exception as e:
             message = 'Error adding {}: {}'.format(name, e)
             tweets = []
 
         return render_template('user.html', title=name, tweets=tweets,
-                               message=message)
+                               message=message, followers=followers)
 
     @app.route('/compare', methods=['POST'])
     def compare():
